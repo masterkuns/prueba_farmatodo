@@ -1,0 +1,22 @@
+server:
+   port: 9095
+
+spring:
+   application:
+      name: prueba_farmatodo
+
+   jpa:
+      properties.hibernate.dialect : org.hibernate.dialect.PostgreSQLDialect
+      show-sql: true
+
+   datasource:
+      url: jdbc:postgresql://localhost:5432/postgres
+      username: postgres
+      password: root
+      driverClassName: org.postgresql.Driver
+      hikari:
+         poolName: pool-hikari-financiero
+         connectionTimeout: 60000
+         maximumPoolSize: 2
+         maxLifetime: 1800000
+         autoCommit: true
