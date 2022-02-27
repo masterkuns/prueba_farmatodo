@@ -9,8 +9,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-//@ComponentScan(basePackages= {"com.prueba.farmatodo", "com.prueba.farmatodo.repository"})
-//@EntityScan(basePackages= {"com.prueba.farmatodo.entity"})
+@ComponentScan(basePackages= {"com.prueba.farmatodo", "com.prueba.farmatodo.repository"})
+@EntityScan(basePackages= {"com.prueba.farmatodo.entity"})
 public class FarmatodoApplication {
 
 	public static void main(String[] args) {

@@ -1,6 +1,7 @@
 package com.prueba.farmatodo.services.impl;
 
 import com.prueba.farmatodo.dto.*;
+import com.prueba.farmatodo.repository.ICapitulosRepository;
 import com.prueba.farmatodo.services.IRickAndMortyService;
 import com.prueba.farmatodo.utils.Constantes;
 import lombok.extern.log4j.Log4j2;
@@ -24,8 +25,13 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
     private static RestTemplate restTemplateDataPersonaje;
     private static RestTemplate restTemplateDataLocalizacion;
     private static HttpHeaders headers = new HttpHeaders();
+    private ICapitulosRepository iCapitulosRepository;
+
 
     private String nombreEpisodio = "";
+    private Boolean capituloExiste;
+    private Integer episodio;
+
 
     private List<PersonajeDto> personajes;
     private LocalizacionDto localizacion;
@@ -34,26 +40,26 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
 
     @SuppressWarnings("static-access")
     @Autowired
-    public RickAndMortyServiceImpl(RestTemplate restTemplate, RestTemplateBuilder restTemplateBuilder, List<PersonajeDto> personajes, LocalizacionDto localizacion) {
+    public RickAndMortyServiceImpl(RestTemplate restTemplate, RestTemplateBuilder restTemplateBuilder, List<PersonajeDto> personajes, LocalizacionDto localizacion, ICapitulosRepository iCapitulosRepository) {
         this.restTemplate = restTemplate;
         this.restTemplateDataEpisodio = restTemplateBuilder.build();
         this.restTemplateDataPersonaje = restTemplateBuilder.build();
         this.restTemplateDataLocalizacion = restTemplateBuilder.build();
         this.personajes = personajes;
         this.localizacion = localizacion;
+        this.iCapitulosRepository = iCapitulosRepository;
     }
 
 
     @Override
     public EpisodioDto ConsultarEpisodio(RpaEpisodioDto rpaEpisodioDto) {
         personajes.clear();
-        localizacion = new LocalizacionDto();
-
         log.info("Entro-RickAndMortyServiceImpl-ConsultarEpisodio: episodio: {}", rpaEpisodioDto.getNmroEpisodio());
         EpisodioDto episodioDto = new EpisodioDto();
         Integer idEpisodio = rpaEpisodioDto.getNmroEpisodio();
-
+        episodio = idEpisodio;
         try {
+
             ConsultarInformacionEpisodio(idEpisodio);
             episodioDto.setEpisode(rpaEpisodioDto.getNmroEpisodio());
             episodioDto.setEpisodeName(nombreEpisodio);
@@ -69,7 +75,7 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
 
     public DataEpisodioDto ConsultarInformacionEpisodio(Integer idEpisodio) {
         DataEpisodioDto dataEpisodioDto = new DataEpisodioDto();
-
+        capituloExiste = true;
         try {
             String url = Constantes.UrlInformacionEpisodio +idEpisodio;
 
@@ -80,8 +86,14 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
 
             if (dataEpisodio.getBody() != null) {
                 dataEpisodioDto = dataEpisodio.getBody();
-
                 nombreEpisodio = dataEpisodioDto.getName();
+
+                Integer validarCapitulo = iCapitulosRepository.consultarCapituloExistente(idEpisodio);
+                if (validarCapitulo == 0) {
+                    capituloExiste = false;
+                    iCapitulosRepository.insertarCapitulo(idEpisodio, nombreEpisodio);
+                }
+
                 dataEpisodioDto.getCharacters().forEach(character -> {
                             Integer id = Integer.parseInt(character.split("/")[character.split("/").length - 1]);
                             ConsultarInformacionPersonaje(id);
@@ -109,6 +121,14 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
             if (datapersonaje.getBody() != null) {
                 dataPersonajeDto = datapersonaje.getBody();
 
+                if (!capituloExiste) {
+                    iCapitulosRepository.insertarPersonaje(
+                            episodio,
+                            dataPersonajeDto.getName(),
+                            dataPersonajeDto.getSpecies(),
+                            dataPersonajeDto.getGender(),
+                            dataPersonajeDto.getImage());
+                }
 
                 Integer id = Integer.parseInt(dataPersonajeDto.getLocation().getUrl().split("/")[dataPersonajeDto.getLocation().getUrl().split("/").length - 1]);
                 ConsultarInformacionLocalizacion(id);
@@ -144,6 +164,14 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
             if (dataLocalizacion.getBody() != null) {
                 dataLocalizacionDto = dataLocalizacion.getBody();
 
+                if (!capituloExiste) {
+                    iCapitulosRepository.insertarLugar(
+                            episodio,
+                            dataLocalizacionDto.getName(),
+                            dataLocalizacionDto.getType(),
+                            dataLocalizacionDto.getDimension());
+                }
+
                 LocalizacionDto localizacionDto = new LocalizacionDto();
                 localizacionDto.setName(dataLocalizacionDto.getName());
                 localizacionDto.setType(dataLocalizacionDto.getType());
@@ -155,9 +183,8 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
             log.error("Error-RickAndMortyServiceImpl-ConsultarInformacionLocalizacion: {}", e.getMessage());
         }
 
-        return dataLocalizacionDto;    }
-
-
+        return dataLocalizacionDto;
+    }
 }
 
 
