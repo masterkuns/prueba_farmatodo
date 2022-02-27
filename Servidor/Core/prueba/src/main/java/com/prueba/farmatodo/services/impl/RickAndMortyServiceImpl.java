@@ -1,8 +1,6 @@
 package com.prueba.farmatodo.services.impl;
 
-import com.prueba.farmatodo.dto.DataEpisodioDto;
-import com.prueba.farmatodo.dto.PersonajeDto;
-import com.prueba.farmatodo.dto.RpaEpisodioDto;
+import com.prueba.farmatodo.dto.*;
 import com.prueba.farmatodo.services.IRickAndMortyService;
 import com.prueba.farmatodo.utils.Constantes;
 import lombok.extern.log4j.Log4j2;
@@ -16,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Service
 @Log4j2
 public class RickAndMortyServiceImpl implements IRickAndMortyService {
@@ -25,42 +25,67 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
     private static RestTemplate restTemplateDataLocalizacion;
     private static HttpHeaders headers = new HttpHeaders();
 
+    private String nombreEpisodio = "";
+
+    private List<PersonajeDto> personajes;
+    private LocalizacionDto localizacion;
+
+
 
     @SuppressWarnings("static-access")
     @Autowired
-    public RickAndMortyServiceImpl(RestTemplate restTemplate, RestTemplateBuilder restTemplateBuilder) {
+    public RickAndMortyServiceImpl(RestTemplate restTemplate, RestTemplateBuilder restTemplateBuilder, List<PersonajeDto> personajes, LocalizacionDto localizacion) {
         this.restTemplate = restTemplate;
         this.restTemplateDataEpisodio = restTemplateBuilder.build();
         this.restTemplateDataPersonaje = restTemplateBuilder.build();
         this.restTemplateDataLocalizacion = restTemplateBuilder.build();
+        this.personajes = personajes;
+        this.localizacion = localizacion;
     }
 
+
     @Override
-    public DataEpisodioDto ConsultarInformacionEpisodio(RpaEpisodioDto rpaEpisodioDto) {
-        log.info("Entro-RickAndMortyServiceImpl-consultarEpisodio: episodio: {}", rpaEpisodioDto.getNmroEpisodio());
+    public EpisodioDto ConsultarEpisodio(RpaEpisodioDto rpaEpisodioDto) {
+        personajes.clear();
+        localizacion = new LocalizacionDto();
+
+        log.info("Entro-RickAndMortyServiceImpl-ConsultarEpisodio: episodio: {}", rpaEpisodioDto.getNmroEpisodio());
+        EpisodioDto episodioDto = new EpisodioDto();
+        Integer idEpisodio = rpaEpisodioDto.getNmroEpisodio();
+
+        try {
+            ConsultarInformacionEpisodio(idEpisodio);
+            episodioDto.setEpisode(rpaEpisodioDto.getNmroEpisodio());
+            episodioDto.setEpisodeName(nombreEpisodio);
+            episodioDto.setCharacters(personajes);
+
+        } catch (Exception e) {
+            log.error("Error-RickAndMortyServiceImpl-consultarEpisodio: {}", e.getMessage());
+
+        }
+
+        return episodioDto;
+    }
+
+    public DataEpisodioDto ConsultarInformacionEpisodio(Integer idEpisodio) {
         DataEpisodioDto dataEpisodioDto = new DataEpisodioDto();
 
         try {
-            String url = Constantes.UrlInformacionEpisodio +rpaEpisodioDto.getNmroEpisodio();
+            String url = Constantes.UrlInformacionEpisodio +idEpisodio;
 
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
             HttpEntity<Object> entityWs = new HttpEntity<Object>(headers);
 
             ResponseEntity<DataEpisodioDto> dataEpisodio = restTemplateDataEpisodio.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataEpisodioDto.class);
 
-            log.info("Direccion de la peticion realizada para el episodio [{}]: {}", rpaEpisodioDto.getNmroEpisodio(), builder.toUriString());
-            log.info("data Episodio {}", dataEpisodio.getBody());
-
             if (dataEpisodio.getBody() != null) {
                 dataEpisodioDto = dataEpisodio.getBody();
 
+                nombreEpisodio = dataEpisodioDto.getName();
                 dataEpisodioDto.getCharacters().forEach(character -> {
-                            log.info("character: {}", character);
                             Integer id = Integer.parseInt(character.split("/")[character.split("/").length - 1]);
-                            log.info("IdPersonaje: {}", id);
+                            ConsultarInformacionPersonaje(id);
                         });
-
-                //capturar cada episodioDto.
             }
         } catch (Exception e) {
             log.error("Error-RickAndMortyServiceImpl-consultarEpisodio: {}", e.getMessage());
@@ -70,32 +95,69 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
     }
 
 
-    public PersonajeDto ConsultarInformacionPersonaje(Integer idPersonaje) {
-        log.info("Entro-RickAndMortyServiceImpl-ConsultarInformacionPersonaje: IdPersonaje: {}",idPersonaje);
-        PersonajeDto personajeDto = new PersonajeDto();
+    public DataPersonajeDto ConsultarInformacionPersonaje(Integer idPersonaje) {
+        DataPersonajeDto dataPersonajeDto = new DataPersonajeDto();
 
         try {
-            String url = Constantes.UrlInformacionEpisodio +idPersonaje;
+            String url = Constantes.UrlInformacionPersonaje +idPersonaje;
 
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
             HttpEntity<Object> entityWs = new HttpEntity<Object>(headers);
 
-            ResponseEntity<PersonajeDto> datapersonaje = restTemplateDataPersonaje.exchange(builder.toUriString(), HttpMethod.GET, entityWs, PersonajeDto.class);
-
-            log.info("Direccion de la peticion realizada para el IdPersonaje [{}]: {}", idPersonaje, builder.toUriString());
-            log.info("data Personaje {}", datapersonaje.getBody());
+            ResponseEntity<DataPersonajeDto> datapersonaje = restTemplateDataPersonaje.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataPersonajeDto.class);
 
             if (datapersonaje.getBody() != null) {
-                personajeDto = datapersonaje.getBody();
+                dataPersonajeDto = datapersonaje.getBody();
+
+
+                Integer id = Integer.parseInt(dataPersonajeDto.getLocation().getUrl().split("/")[dataPersonajeDto.getLocation().getUrl().split("/").length - 1]);
+                ConsultarInformacionLocalizacion(id);
+
+                PersonajeDto personajeDto = new PersonajeDto();
+                personajeDto.setName(dataPersonajeDto.getName());
+                personajeDto.setSpecies(dataPersonajeDto.getSpecies());
+                personajeDto.setGender(dataPersonajeDto.getGender());
+                personajeDto.setImage(dataPersonajeDto.getImage());
+                personajeDto.setLocation(localizacion);
+                personajes.add(personajeDto);
+
             }
         } catch (Exception e) {
-            log.error("Error-RickAndMortyServiceImpl-consultarEpisodio: {}", e.getMessage());
+            log.error("Error-RickAndMortyServiceImpl-ConsultarInformacionPersonaje: {}", e.getMessage());
         }
 
-        return personajeDto;
+        return dataPersonajeDto;
     }
 
+    public DataLocalizacionDto ConsultarInformacionLocalizacion(Integer idLocalizacion) {
+        DataLocalizacionDto dataLocalizacionDto = new DataLocalizacionDto();
+        localizacion = new LocalizacionDto();
 
+        try {
+            String url = Constantes.UrlInformacionLocalizacion +idLocalizacion;
+
+            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+            HttpEntity<Object> entityWs = new HttpEntity<Object>(headers);
+
+            ResponseEntity<DataLocalizacionDto> dataLocalizacion = restTemplateDataLocalizacion.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataLocalizacionDto.class);
+
+            if (dataLocalizacion.getBody() != null) {
+                dataLocalizacionDto = dataLocalizacion.getBody();
+
+                LocalizacionDto localizacionDto = new LocalizacionDto();
+                localizacionDto.setName(dataLocalizacionDto.getName());
+                localizacionDto.setType(dataLocalizacionDto.getType());
+                localizacionDto.setDimension(dataLocalizacionDto.getDimension());
+                localizacion = localizacionDto;
+
+            }
+        } catch (Exception e) {
+            log.error("Error-RickAndMortyServiceImpl-ConsultarInformacionLocalizacion: {}", e.getMessage());
+        }
+
+        return dataLocalizacionDto;    }
 
 
 }
+
+

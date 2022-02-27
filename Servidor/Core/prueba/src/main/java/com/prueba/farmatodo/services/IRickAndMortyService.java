@@ -1,9 +1,11 @@
 package com.prueba.farmatodo.services;
 
-import com.prueba.farmatodo.dto.DataEpisodioDto;
-import com.prueba.farmatodo.dto.RpaEpisodioDto;
+import com.prueba.farmatodo.dto.*;
 
 public interface IRickAndMortyService {
 
-    public DataEpisodioDto ConsultarInformacionEpisodio(RpaEpisodioDto rpaEpisodioDto);
+    public EpisodioDto ConsultarEpisodio(RpaEpisodioDto rpaEpisodioDto);
+
 }
+
+

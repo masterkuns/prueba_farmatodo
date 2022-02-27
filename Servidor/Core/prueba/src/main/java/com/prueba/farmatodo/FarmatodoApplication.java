@@ -1,5 +1,6 @@
 package com.prueba.farmatodo;
 
+import com.prueba.farmatodo.dto.LocalizacionDto;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -19,6 +20,7 @@ public class FarmatodoApplication {
 	@Bean
 	public RestTemplate restTemplate(){ return new RestTemplate(); }
 
+	@Bean LocalizacionDto localizacionDto(){ return new LocalizacionDto(); }
 }
 
 
