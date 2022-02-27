@@ -82,7 +82,20 @@ public class NumerosServiceImpl implements INumerosService {
 
     @Override
     public SumatoriaDto sumatoriaNumerosNaturales(RpaNumeroDto rpaNumeroDto) {
-        return null;
+
+        SumatoriaDto sumatoriaDto = new SumatoriaDto();
+
+        try {
+            int n = rpaNumeroDto.getNumero(), sum = 0, i = 1;
+            while (i <= n) {
+                sum = sum + i;
+                i++;
+            }
+            sumatoriaDto.setResult(sum);
+        } catch (Exception e) {
+            log.error("Error al sumar los numeros naturales", e);
+        }
+        return sumatoriaDto;
     }
 }
 
