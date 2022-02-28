@@ -22,8 +22,6 @@ import java.util.List;
 public class RickAndMortyServiceImpl implements IRickAndMortyService {
     private static RestTemplate restTemplate;
     private static RestTemplate restTemplateDataEpisodio;
-    private static RestTemplate restTemplateDataPersonaje;
-    private static RestTemplate restTemplateDataLocalizacion;
     private static HttpHeaders headers = new HttpHeaders();
     private ICapitulosRepository iCapitulosRepository;
 
@@ -43,8 +41,6 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
     public RickAndMortyServiceImpl(RestTemplate restTemplate, RestTemplateBuilder restTemplateBuilder, List<PersonajeDto> personajes, LocalizacionDto localizacion, ICapitulosRepository iCapitulosRepository) {
         this.restTemplate = restTemplate;
         this.restTemplateDataEpisodio = restTemplateBuilder.build();
-        this.restTemplateDataPersonaje = restTemplateBuilder.build();
-        this.restTemplateDataLocalizacion = restTemplateBuilder.build();
         this.personajes = personajes;
         this.localizacion = localizacion;
         this.iCapitulosRepository = iCapitulosRepository;
@@ -92,6 +88,8 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
                 if (validarCapitulo == 0) {
                     capituloExiste = false;
                     iCapitulosRepository.insertarCapitulo(idEpisodio, nombreEpisodio);
+                }else{
+                    log.info("El episodio: {} ya se encuentra registrado",idEpisodio);
                 }
 
                 dataEpisodioDto.getCharacters().forEach(character -> {
@@ -116,7 +114,7 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
             HttpEntity<Object> entityWs = new HttpEntity<Object>(headers);
 
-            ResponseEntity<DataPersonajeDto> datapersonaje = restTemplateDataPersonaje.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataPersonajeDto.class);
+            ResponseEntity<DataPersonajeDto> datapersonaje = restTemplateDataEpisodio.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataPersonajeDto.class);
 
             if (datapersonaje.getBody() != null) {
                 dataPersonajeDto = datapersonaje.getBody();
@@ -159,7 +157,7 @@ public class RickAndMortyServiceImpl implements IRickAndMortyService {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
             HttpEntity<Object> entityWs = new HttpEntity<Object>(headers);
 
-            ResponseEntity<DataLocalizacionDto> dataLocalizacion = restTemplateDataLocalizacion.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataLocalizacionDto.class);
+            ResponseEntity<DataLocalizacionDto> dataLocalizacion = restTemplateDataEpisodio.exchange(builder.toUriString(), HttpMethod.GET, entityWs, DataLocalizacionDto.class);
 
             if (dataLocalizacion.getBody() != null) {
                 dataLocalizacionDto = dataLocalizacion.getBody();

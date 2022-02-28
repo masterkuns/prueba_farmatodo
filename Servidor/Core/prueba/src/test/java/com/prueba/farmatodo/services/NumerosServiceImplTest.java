@@ -1,29 +1,25 @@
 package com.prueba.farmatodo.services;
 
-//unit test junit 4 and mockito
 
 import com.prueba.farmatodo.dto.RpaNumeroDto;
 import com.prueba.farmatodo.dto.SumatoriaDto;
 import com.prueba.farmatodo.services.impl.NumerosServiceImpl;
-import com.sun.jdi.LongValue;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NumerosServiceImplTest {
-
+    @InjectMocks
     private NumerosServiceImpl numerosServiceImpl;
 
     @Before
     public void setUp() {
-        //numeroservice tiene constructor privado
         numerosServiceImpl = new NumerosServiceImpl();
     }
-
-
 
     @Test
     public void testSumar() {
@@ -48,6 +44,5 @@ public class NumerosServiceImplTest {
         rpaNumeroDto.setNumero(10);
         return rpaNumeroDto;
     }
-
 }
 
