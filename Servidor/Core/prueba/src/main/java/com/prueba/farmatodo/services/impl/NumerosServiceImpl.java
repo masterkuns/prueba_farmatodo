@@ -23,6 +23,10 @@ public class NumerosServiceImpl implements INumerosService {
         this.numeroFeliz = numeroFeliz;
     }
 
+    public NumerosServiceImpl() {
+
+    }
+
 
     public static int[] digitosNumero(int iNumero) {
 
