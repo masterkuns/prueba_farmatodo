@@ -7,7 +7,9 @@ Antes de iniciar el proyecto, se recomienda ejecutar los scripts sql en el esque
 2. Servicios, todos los servicios corren por POST el cuerpo de la peticion se maneja como raw -> JSON
 
  2.1 Ejecucion Servicio episodios rick y morty
-   *Direccion del servicio: http://localhost:9095/api/consultar/episodio
+   *Direccion del servicio para pruebas locales: http://localhost:9095/api/consultar/episodio
+   *Direccion del servicio para pruebas en el despliegue heroku: https://prueba-farmatodo.herokuapp.com/api/consultar/episodio
+
 
    *Cuerpo de la peticion:
    {
@@ -16,6 +18,7 @@ Antes de iniciar el proyecto, se recomienda ejecutar los scripts sql en el esque
 
  2.2 Ejecucion Servicio listado de numeros felices
    *Direccion del servicio: http://localhost:9095/api/consultar/numeros/felices
+   *Direccion del servicio para pruebas en el despliegue heroku: https://prueba-farmatodo.herokuapp.com/api/consultar/numeros/felices
    
    *Cuerpo de la peticion:
    {
@@ -24,6 +27,7 @@ Antes de iniciar el proyecto, se recomienda ejecutar los scripts sql en el esque
 
 2.3 Ejecucion Servicio sumatoria de numeros naturales
    *Direccion del servicio: http://localhost:9095/api/sumatoria/numeros/naturales
+   *Direccion del servicio para pruebas en el despliegue heroku: https://prueba-farmatodo.herokuapp.com/api/sumatoria/numeros/naturales
    
    *Cuerpo de la peticion:
    {
